@@ -1,9 +1,11 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using System.Net.Http.Json;
-using Talebook.Application.DTOs;
-using Talebook.Application.Interfaces;
+using HackerNews.Application.DTOs;
+using HackerNews.Application.Interfaces;
+using HackerNews.Infrastructure.Models;
+using Microsoft.Extensions.Logging;
 
-namespace Talebook.Infrastructure.Services
+namespace HackerNews.Infrastructure.Services
 {
     public class NewsService : INewsService
     {
@@ -13,49 +15,58 @@ namespace Talebook.Infrastructure.Services
         private const string TopStoriesUrl = "https://hacker-news.firebaseio.com/v0/topstories.json";
         private const string StoryDetailUrl = "https://hacker-news.firebaseio.com/v0/item/{0}.json";
 
-        public NewsService(HttpClient httpClient, IMemoryCache cache)
+        private readonly ILogger<NewsService> _logger;
+
+        public NewsService(HttpClient httpClient, IMemoryCache cache, ILogger<NewsService> logger)
         {
             _httpClient = httpClient;
             _cache = cache;
+            _logger = logger;
         }
 
-        public async Task<List<TaleDto>> GetTopTalesAsync(int count)
+        public async Task<List<NewsItemDto>> GetTopNewsAsync(int count)
         {
-            const string cacheKey = "TopTales";
-            List<TaleDto> allTales;
+            const string cacheKey = "TopNews";
+            List<NewsItemDto> allNews;
 
-            if (!_cache.TryGetValue(cacheKey, out allTales))
+            if (!_cache.TryGetValue(cacheKey, out allNews))
             {
                 var ids = await _httpClient.GetFromJsonAsync<List<int>>(TopStoriesUrl);
-                allTales = new List<TaleDto>();
+                allNews = new List<NewsItemDto>();
+                var resultLock = new object();
 
                 if (ids != null && ids.Count > 0)
                 {
-                    foreach (var id in ids.Take(200)) // Always fetch max once
+                    var topIds = ids.Take(count * 2);
+
+                    await Parallel.ForEachAsync(topIds, async (id, token) =>
                     {
-                        var url = string.Format(StoryDetailUrl, id);
-                        var story = await _httpClient.GetFromJsonAsync<HackerNewsStory>(url);
-
-                        if (!string.IsNullOrEmpty(story?.Title) && !string.IsNullOrEmpty(story?.Url))
+                        try
                         {
-                            allTales.Add(new TaleDto { Title = story.Title, Url = story.Url });
-                        }
-                    }
+                            var url = string.Format(StoryDetailUrl, id);
+                            var story = await _httpClient.GetFromJsonAsync<HackerNewsStory>(url, token);
 
-                    // Cache full list
-                    _cache.Set(cacheKey, allTales, TimeSpan.FromMinutes(10));
+                            if (!string.IsNullOrEmpty(story?.Title) && !string.IsNullOrEmpty(story?.Url))
+                            {
+                                var item = new NewsItemDto { Title = story.Title, Url = story.Url };
+                                lock (resultLock)
+                                {
+                                    allNews.Add(item);
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger?.LogWarning(ex, "Failed to fetch story with ID {StoryId}", id);
+                        }
+                    });
+
+                    _cache.Set(cacheKey, allNews, TimeSpan.FromMinutes(10));
                 }
             }
 
-            // Return the requested count
-            return allTales.Take(count).ToList();
+            return allNews.Take(count).ToList();
         }
 
-
-        private class HackerNewsStory
-        {
-            public string Title { get; set; }
-            public string Url { get; set; }
-        }
     }
 }
