@@ -1,10 +1,11 @@
 ﻿using FluentAssertions;
+using HackerNews.Infrastructure.Services;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
 using System.Net;
 using System.Net.Http.Json;
-using Talebook.Infrastructure.Services;
 
 public class NewsServiceTests
 {
@@ -16,7 +17,7 @@ public class NewsServiceTests
     }
 
     [Fact]
-    public async Task GetTopTalesAsync_ReturnsListOfTales()
+    public async Task GetTopNewsAsync_ReturnsListOfNews()
     {
         // Arrange
         var storyIds = new List<int> { 1, 2 };
@@ -38,14 +39,39 @@ public class NewsServiceTests
             BaseAddress = new Uri("https://hacker-news.firebaseio.com/")
         };
 
-        var service = new NewsService(httpClient, _memoryCache);
+        var service = new NewsService(httpClient, _memoryCache, Mock.Of<ILogger<NewsService>>());
 
         // Act
-        var result = await service.GetTopTalesAsync(2);
+        var result = await service.GetTopNewsAsync(2);
 
         // Assert
         result.Should().HaveCount(2);
-        result[0].Title.Should().Be("Title 1");
-        result[1].Url.Should().Be("http://url2.com");
+        result.Should().ContainSingle(r => r.Title == "Title 1");
+        result.Should().ContainSingle(r => r.Title == "Title 2");
     }
+
+    [Fact]
+    public async Task GetTopNewsAsync_SkipsInvalidStories()
+    {
+        var storyIds = new List<int> { 1 };
+        var response1 = new { title = "", url = "" }; // invalid story
+
+        var handlerMock = new Mock<HttpMessageHandler>();
+        handlerMock.Protected()
+            .SetupSequence<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = JsonContent.Create(storyIds) })
+            .ReturnsAsync(new HttpResponseMessage { StatusCode = HttpStatusCode.OK, Content = JsonContent.Create(response1) });
+
+        var httpClient = new HttpClient(handlerMock.Object)
+        {
+            BaseAddress = new Uri("https://hacker-news.firebaseio.com/")
+        };
+
+        var service = new NewsService(httpClient, _memoryCache, Mock.Of<ILogger<NewsService>>());
+
+        var result = await service.GetTopNewsAsync(1);
+
+        result.Should().BeEmpty();
+    }
+
 }
