@@ -3,13 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34202.233
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Talebook.WebApi", "Talebook.WebApi\Talebook.WebApi.csproj", "{E08B1BF0-B7F4-425B-A345-40B22E0B624E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HackerNews.WebApi", "Talebook.WebApi\HackerNews.WebApi.csproj", "{E08B1BF0-B7F4-425B-A345-40B22E0B624E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Talebook.Application", "Talebook.Application\Talebook.Application.csproj", "{710805E2-90A2-427E-A5B1-CE5DEFE405FE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HackerNews.Application", "Talebook.Application\HackerNews.Application.csproj", "{710805E2-90A2-427E-A5B1-CE5DEFE405FE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Talebook.Infrastructure", "Talebook.Infrastructure\Talebook.Infrastructure.csproj", "{0A6088E2-0D96-4B44-9DF7-3518AB92732F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HackerNews.Infrastructure", "Talebook.Infrastructure\HackerNews.Infrastructure.csproj", "{0A6088E2-0D96-4B44-9DF7-3518AB92732F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Talebook.Tests", "Talebook.Tests\Talebook.Tests.csproj", "{E4AE7043-7E9E-4C80-9073-34BE09EE858C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HackerNews.Tests", "Talebook.Tests\HackerNews.Tests.csproj", "{E4AE7043-7E9E-4C80-9073-34BE09EE858C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

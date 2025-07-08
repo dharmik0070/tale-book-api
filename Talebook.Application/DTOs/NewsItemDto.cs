@@ -1,6 +1,6 @@
-﻿namespace Talebook.Application.DTOs
+﻿namespace HackerNews.Application.DTOs
 {
-    public class TaleDto
+    public class NewsItemDto
     {
         public string Title { get; set; }
         public string Url { get; set; }

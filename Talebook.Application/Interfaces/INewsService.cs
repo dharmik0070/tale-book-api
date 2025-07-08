@@ -1,9 +1,9 @@
-﻿using Talebook.Application.DTOs;
+﻿using HackerNews.Application.DTOs;
 
-namespace Talebook.Application.Interfaces
+namespace HackerNews.Application.Interfaces
 {
     public interface INewsService
     {
-        Task<List<TaleDto>> GetTopTalesAsync(int count);
+        Task<List<NewsItemDto>> GetTopNewsAsync(int count);
     }
 }

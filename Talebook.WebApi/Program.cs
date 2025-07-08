@@ -1,5 +1,5 @@
-using Talebook.Application.Interfaces;
-using Talebook.Infrastructure.Services;
+using HackerNews.Infrastructure.Services;
+using HackerNews.Application.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
