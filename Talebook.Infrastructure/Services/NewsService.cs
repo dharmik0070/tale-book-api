@@ -37,7 +37,7 @@ namespace HackerNews.Infrastructure.Services
 
                 if (ids != null && ids.Count > 0)
                 {
-                    var topIds = ids.Take(count * 2);
+                    var topIds = ids.Take(count);
 
                     await Parallel.ForEachAsync(topIds, async (id, token) =>
                     {
